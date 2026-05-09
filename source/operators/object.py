@@ -976,6 +976,9 @@ class OBJECT_OT_incremental_resize(Operator):
 
         for ob in context.selected_objects:
             if "gem" in ob:
+                if any(ob.lock_scale):
+                    continue
+
                 _step = -self.gem_step if neg else self.gem_step
                 _min = self.gem_min
                 _max = self.gem_max
