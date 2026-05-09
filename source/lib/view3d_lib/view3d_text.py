@@ -7,11 +7,14 @@ from typing import NamedTuple
 import blf
 import bpy
 
+from .. import colorlib
+
 _TYPE_BOOL = 1
 _TYPE_INT = 2
 _TYPE_PROC = 3
 _TYPE_ENUM = 4
 _TYPE_HOTKEY = 5
+_FONT_SIZE = 22
 
 
 class _Prop(NamedTuple):
@@ -70,6 +73,69 @@ class Layout:
         self._prop(_TYPE_HOTKEY, name, key, "", None)
 
 
+def _draw_text(
+    fontid: int,
+    text: str,
+    x: int,
+    y: int,
+    color: tuple[float, float, float, float],
+    shadow_color: tuple[float, float, float, float],
+    outline: int = 1,
+) -> None:
+    for offset_x, offset_y in (
+        (-outline, -outline),
+        (-outline, 0),
+        (-outline, outline),
+        (0, -outline),
+        (0, outline),
+        (outline, -outline),
+        (outline, 0),
+        (outline, outline),
+    ):
+        blf.position(fontid, x + offset_x, y + offset_y, 0.0)
+        blf.color(fontid, *shadow_color)
+        blf.draw(fontid, text)
+
+    blf.position(fontid, x, y, 0.0)
+    blf.color(fontid, *color)
+    blf.draw(fontid, text)
+
+
+def _get_background_color() -> tuple[float, float, float]:
+    shading = bpy.context.space_data.shading
+
+    if shading.background_type == "WORLD":
+        world = bpy.context.scene.world
+        if world is not None:
+            return tuple(world.color)
+
+    elif shading.background_type == "VIEWPORT":
+        return tuple(shading.background_color)
+
+    gradients = bpy.context.preferences.themes[0].view_3d.space.gradients
+
+    if gradients.background_type == "RADIAL":
+        return tuple(gradients.gradient)
+
+    return tuple(gradients.high_gradient)
+
+
+def _get_text_colors() -> tuple[tuple[float, float, float, float], tuple[float, float, float, float]]:
+    color = list(bpy.context.preferences.themes[0].view_3d.space.text_hi)
+    bg_color = _get_background_color()
+
+    if sum((text_channel - bg_channel) ** 2 for text_channel, bg_channel in zip(color, bg_color, strict=True)) ** 0.5 < 0.5:
+        factor = 0.33 if colorlib.luma(color) > 0.5 else 3.0
+        color = [min(max(channel * factor, 0.0), 1.0) for channel in color]
+
+    shadow_value = 0.0 if colorlib.luma(color) > 0.4 else 1.0
+    return (*color, 1.0), (shadow_value, shadow_value, shadow_value, 0.8)
+
+
+def _dim_shadow(shadow_color: tuple[float, float, float, float], factor: float = 0.25) -> tuple[float, float, float, float]:
+    return (*shadow_color[:3], shadow_color[3] * factor)
+
+
 def _get_font_scale(prefs: bpy.types.Preferences) -> float:
     # VER
     if bpy.app.version >= (4, 3, 0):
@@ -78,6 +144,16 @@ def _get_font_scale(prefs: bpy.types.Preferences) -> float:
         font_size = prefs.ui_styles[0].widget_label.points
 
     return font_size * prefs.view.ui_scale / 11  # 11 is the default font size
+
+
+def _get_lineheight(prefs: bpy.types.Preferences, fontid: int = 1) -> int:
+    fontscale = _get_font_scale(prefs)
+    fontsize = round(fontscale * _FONT_SIZE)
+
+    blf.size(fontid, fontsize)
+
+    _, h_font = blf.dimensions(fontid, "M")
+    return round(h_font * 1.8)
 
 
 def get_xy() -> tuple[int, int]:
@@ -104,6 +180,7 @@ def get_xy() -> tuple[int, int]:
         _y += 140
 
     y += round(_y * fontscale)
+    y += _get_lineheight(prefs) * 2
     y = bpy.context.region.height - y
 
     return x, y
@@ -124,24 +201,25 @@ def _get_props(layout: Layout, data) -> Iterator[_Prop]:
 def draw_options(data, layout: Layout, x: int, y: int) -> None:
     prefs = bpy.context.preferences
 
-    color_text = prefs.themes[0].view_3d.space.text_hi
-    color_grey = (0.67, 0.67, 0.67, 1.0)
-    color_green = (0.3, 1.0, 0.3, 1.0)
+    color_text, color_shadow = _get_text_colors()
+    color_shadow_soft = _dim_shadow(color_shadow, 0)
+    color_grey = color_text
+    color_green = (0.2, 1.0, 0.4, 1.0)
     color_red = (1.0, 0.3, 0.3, 1.0)
     color_yellow = (0.9, 0.9, 0.0, 1.0)
-    color_blue = (0.5, 0.6, 1.0, 1.0)
+    color_blue = (0.3, 0.5, 1.0, 1.0)
 
     fontid = 1
     fontscale = _get_font_scale(prefs)
-    fontsize = round(fontscale * 15)
+    fontsize = round(fontscale * _FONT_SIZE)
 
     blf.size(fontid, fontsize)
 
     col_max = layout.get_col_max()
     w_col1, _ = blf.dimensions(fontid, col_max[0])
     w_col2, _ = blf.dimensions(fontid, col_max[1])
-    _, h_font = blf.dimensions(fontid, "M")
-    lineheight = round(h_font * 1.8)
+    lineheight = _get_lineheight(prefs, fontid)
+    outline = max(1, round(fontscale))
 
     for prop in _get_props(layout, data):
         y -= lineheight
@@ -150,61 +228,40 @@ def draw_options(data, layout: Layout, x: int, y: int) -> None:
         if prop.type is None:
             continue
 
-        blf.position(fontid, x, y, 0.0)
-        blf.color(fontid, *color_text, 1.0)
-        blf.draw(fontid, prop.name)
+        _draw_text(fontid, prop.name, x, y, color_text, color_shadow, outline)
 
         if prop.key:
             _x += w_col1 + 20
-            blf.position(fontid, _x, y, 0.0)
-            blf.color(fontid, *color_grey)
-            blf.draw(fontid, prop.key)
+            _draw_text(fontid, prop.key, _x, y, color_grey, color_shadow, outline)
 
         if prop.type is _TYPE_BOOL:
             _x += w_col2 + 10
-            blf.position(fontid, _x, y, 0.0)
-            blf.color(fontid, *color_text, 1.0)
-            blf.draw(fontid, ":")
+            _draw_text(fontid, ":", _x, y, color_text, color_shadow, outline)
 
             _x += 20
-            blf.position(fontid, _x, y, 0.0)
             if getattr(data, prop.attr):
-                blf.color(fontid, *color_green)
-                blf.draw(fontid, "ON")
+                _draw_text(fontid, "ON", _x, y, color_green, color_shadow_soft, outline)
             else:
-                blf.color(fontid, *color_red)
-                blf.draw(fontid, "OFF")
+                _draw_text(fontid, "OFF", _x, y, color_red, color_shadow_soft, outline)
 
         elif prop.type is _TYPE_INT:
             _x += w_col2 + 10
-            blf.position(fontid, _x, y, 0.0)
-            blf.color(fontid, *color_text, 1.0)
-            blf.draw(fontid, ":")
+            _draw_text(fontid, ":", _x, y, color_text, color_shadow, outline)
 
             _x += 20
-            blf.position(fontid, _x, y, 0.0)
-            blf.color(fontid, *color_blue)
-            blf.draw(fontid, str(round(getattr(data, prop.attr), 3)))
+            _draw_text(fontid, str(round(getattr(data, prop.attr), 3)), _x, y, color_blue, color_shadow_soft, outline)
 
         elif prop.type is _TYPE_ENUM:
             _x += w_col2 + 10
-            blf.position(fontid, _x, y, 0.0)
-            blf.color(fontid, *color_text, 1.0)
-            blf.draw(fontid, ":")
+            _draw_text(fontid, ":", _x, y, color_text, color_shadow, outline)
 
             _x += 20
-            blf.position(fontid, _x, y, 0.0)
-            blf.color(fontid, *color_text, 1.0)
-            blf.draw(fontid, prop.items[getattr(data, prop.attr)])
+            _draw_text(fontid, prop.items[getattr(data, prop.attr)], _x, y, color_text, color_shadow, outline)
 
         elif prop.type is _TYPE_PROC:
             if getattr(data, prop.attr):
                 _x += w_col2 + 10
-                blf.position(fontid, _x, y, 0.0)
-                blf.color(fontid, *color_text, 1.0)
-                blf.draw(fontid, ":")
+                _draw_text(fontid, ":", _x, y, color_text, color_shadow, outline)
 
                 _x += 20
-                blf.position(fontid, _x, y, 0.0)
-                blf.color(fontid, *color_yellow)
-                blf.draw(fontid, "PROCESSING...")
+                _draw_text(fontid, "PROCESSING...", _x, y, color_yellow, color_shadow_soft, outline)
