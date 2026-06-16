@@ -135,6 +135,10 @@ class VIEW3D_MT_jewelcraft(Menu):
         layout.operator("object.jewelcraft_prongs_auto_add", text="Auto Prongs", icon_value=icon_menu("PRONGS_AUTO"))
         layout.operator("object.jewelcraft_cutter_add", icon_value=icon_menu("CUTTER"))
         layout.operator("object.jewelcraft_microprong_cutter_add", icon_value=icon_menu("CUTTER_MICROPRONG"))
+        layout.separator()
+        layout.operator("object.jewelcraft_cutters_generator_add", text="Cutters Generator", icon_value=icon_menu("CUTTER"))
+        layout.operator("object.jewelcraft_channels_generator_add", text="Channels Generator", icon_value=icon_menu("CUTTER"))
+        layout.separator()
         layout.operator("object.jewelcraft_curve_distribute", icon_value=icon_menu("DISTRIBUTE"))
         layout.operator("object.jewelcraft_curve_redistribute", icon_value=icon_menu("REDISTRIBUTE"))
         layout.separator()
@@ -574,6 +578,12 @@ class VIEW3D_PT_jewelcraft_jeweling(SidebarSetup, Panel):
         col.operator("object.jewelcraft_cutter_add", text="Cutter", text_ctxt="Jewelry", icon_value=icon("CUTTER"))
         col.operator("object.jewelcraft_microprong_cutter_add", text="Microprong Cutter", icon_value=icon("CUTTER_MICROPRONG"))
 
+        layout.separator()
+        col = layout.column(align=True)
+        col.operator("object.jewelcraft_cutters_generator_add", text="Cutters Generator", icon_value=icon("CUTTER"))
+        col.operator("object.jewelcraft_channels_generator_add", text="Channels Generator", icon_value=icon("CUTTER"))
+
+        layout.separator()
         row = layout.row(align=True)
         row.operator("object.jewelcraft_curve_distribute", icon_value=icon("DISTRIBUTE"))
         row.operator("object.jewelcraft_curve_redistribute", text="", icon_value=icon("REDISTRIBUTE"))

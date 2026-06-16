@@ -45,6 +45,8 @@ def register():
 
 def unregister():
     from .lib import overlays, spacing
+    from .operators.add_channels_generator import channels_mesh
+    from .operators.add_cutters_generator import cutters_mesh
 
     for cls in classes:
         bpy.utils.unregister_class(cls)
@@ -62,6 +64,8 @@ def unregister():
 
     overlays.clear()
     spacing.handler_del()
+    cutters_mesh.handler_del()
+    channels_mesh.handler_del()
     on_load.handler_del()
 
     # Translations

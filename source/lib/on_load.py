@@ -40,6 +40,7 @@ def _execute(dummy):
     scene_props = bpy.context.scene.jewelcraft
     scene_props.measurements.deserialize(is_on_load=True)
     _scene_materials_deserialize()
+    _generator_handlers_add()
 
     wm_props = bpy.context.window_manager.jewelcraft
     wm_props.gem_colors.deserialize()
@@ -61,6 +62,19 @@ def _scene_materials_deserialize():
         prefs.property_unset("weighting_default_list")
         bpy.context.preferences.is_dirty = True
         materials.deserialize(prefs.weighting_default_list)
+
+
+def _generator_handlers_add():
+    from ..operators.add_channels_generator import channels_mesh
+    from ..operators.add_cutters_generator import cutters_mesh
+
+    scene = bpy.context.scene
+
+    if any(cutters_mesh.PROP_SOURCE_COLLECTION in ob for ob in scene.objects):
+        cutters_mesh.handler_add()
+
+    if any(channels_mesh.PROP_SOURCE_COLLECTION in ob for ob in scene.objects):
+        channels_mesh.handler_add()
 
 
 def _scene_props_versioning():
