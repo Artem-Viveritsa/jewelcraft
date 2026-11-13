@@ -35,6 +35,7 @@ DESCRIPTION_COLLECTION = "Collection containing gem objects, including gems made
 
 SOCKETS = (
     (SOCKET_COLLECTION, "NodeSocketCollection", None, None, None, DESCRIPTION_COLLECTION),
+    generator_nodes.INTERACTIVE_SOCKET,
     (
         SOCKET_MAX_GAP,
         "NodeSocketFloat",

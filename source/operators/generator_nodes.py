@@ -9,6 +9,13 @@ from bpy.types import GeometryNodeTree, ID, NodesModifier
 
 _SCHEMA_FINGERPRINT_VERSION = 1
 
+SOCKET_INTERACTIVE = "Interactive"
+DESCRIPTION_INTERACTIVE = (
+    "Update the geometry automatically when the sources change, "
+    "turn off to pause updates while editing heavy objects and update with Refresh"
+)
+INTERACTIVE_SOCKET = (SOCKET_INTERACTIVE, "NodeSocketBool", True, None, None, DESCRIPTION_INTERACTIVE)
+
 
 def is_scene_collection(coll) -> bool:
     return any(scene.collection == coll for scene in bpy.data.scenes)
@@ -134,7 +141,7 @@ def _modifier_values(ng: GeometryNodeTree) -> list[tuple[NodesModifier, dict]]:
 
 
 def settings_to_values(settings, socket_attrs) -> dict:
-    return {socket: _attr_value(settings, attr) for socket, attr in socket_attrs}
+    return {SOCKET_INTERACTIVE: True} | {socket: _attr_value(settings, attr) for socket, attr in socket_attrs}
 
 
 def apply_modifier_values(md: NodesModifier, values: dict) -> None:

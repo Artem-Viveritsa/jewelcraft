@@ -10,6 +10,7 @@ from .design_report import *
 from .distribute_on_curve import *
 from .gem import *
 from .gem_map import *
+from .generator_refresh import *
 from .utils import *
 from .weighting import *
 from .object import *

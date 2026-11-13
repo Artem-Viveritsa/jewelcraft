@@ -50,6 +50,11 @@ class OBJECT_PT_cutters_generator_modifier(Panel):
         ob = context.object
         return ob is not None and _cutters_modifier(ob) is not None
 
+    def draw_header(self, context):
+        from . import cutters_nodes
+
+        generator_ui.draw_interactive_header(self.layout, _cutters_modifier(context.object), cutters_nodes)
+
     def draw(self, context):
         from . import cutters_nodes
 
@@ -59,6 +64,7 @@ class OBJECT_PT_cutters_generator_modifier(Panel):
 
         layout = self.layout
         generator_ui.setup_property_layout(layout)
+        generator_ui.draw_refresh(layout, md, identifiers)
 
         from . import cutters_mesh
 

@@ -18,6 +18,7 @@ DESCRIPTION_COLLECTION = "Collection containing gem objects"
 
 SOCKETS = (
     (SOCKET_COLLECTION, "NodeSocketCollection", None, None, None, DESCRIPTION_COLLECTION),
+    generator_nodes.INTERACTIVE_SOCKET,
     (SOCKET_INCLUDE_HANDLE, "NodeSocketBool", True, None, None, "Add a handle above the girdle"),
     ("Handle Top", "NodeSocketFloat", 0.0, None, None, "Top of the handle"),
     ("Handle Length", "NodeSocketFloat", 0.0, None, None, "Length of the handle"),

@@ -10,7 +10,7 @@ from bpy.types import Collection, Depsgraph, Object
 from mathutils import Matrix, Vector
 
 from ...lib import gemlib
-from .. import generator_mesh
+from .. import generator_mesh, generator_nodes
 from ..add_cutter import cutter_mesh
 from ..add_cutter.cutter_presets import init_presets
 from . import cutters_nodes
@@ -25,6 +25,8 @@ CURVE_SEAT_PRESET = "PRESET"
 CURVE_SEAT_OFF = "OFF"
 CURVE_SEAT_ON = "ON"
 DEFAULT_GEM_DIMENSIONS = Vector((1.0, 1.0, 0.6))
+
+_LEVEL_SOCKETS = ("Handle Top", "Handle Bottom", "Girdle Top", "Girdle Bottom", "Hole Top", "Hole Bottom")
 
 _UPDATE_STATE = {}
 
@@ -122,8 +124,12 @@ def cutters_auto_update(scene, depsgraph: Depsgraph) -> None:
     )
 
 
-def update_object(ob: Object, depsgraph: Depsgraph | None = None) -> None:
+def update_object(ob: Object, depsgraph: Depsgraph | None = None, force: bool = False) -> None:
     modifier_values = _modifier_values(ob)
+
+    if not generator_mesh.is_update_allowed(modifier_values, force):
+        return
+
     source_coll = modifier_values["source_coll"]
 
     if source_coll is None:
@@ -237,14 +243,23 @@ def _modifier_values(ob: Object) -> dict:
         "Hole Width": ("Hole Size",),
     }
 
-    generator_mesh.apply_modifier_socket_values(
-        values,
-        generator_mesh.modifier(ob, cutters_nodes),
-        cutters_nodes,
-        legacy_names,
-    )
+    preset_values = values.copy()
+    md = generator_mesh.modifier(ob, cutters_nodes)
+    generator_mesh.apply_modifier_socket_values(values, md, cutters_nodes, legacy_names)
+
+    if md is not None and all(values[socket] == 0.0 for socket in _LEVEL_SOCKETS):
+        restored = {
+            socket: preset_values[socket] for socket, attr in cutters_nodes.SETTINGS_SOCKET_ATTRS if _is_dimension(attr)
+        }
+        generator_nodes.apply_modifier_values(md, restored)
+        values.update(restored)
+
     values["source_coll"] = source_coll
     return values
+
+
+def _is_dimension(attr: str) -> bool:
+    return attr.startswith(("handle_", "girdle_", "hole_"))
 
 
 def _default_modifier_values(settings: _CutterSettings | None = None) -> dict:

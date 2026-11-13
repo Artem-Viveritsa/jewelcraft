@@ -57,6 +57,18 @@ def draw_socket(layout, md, identifiers: dict[str, str], name: str, text: str | 
         layout.prop(md, f'["{identifier}"]', text=text or name)
 
 
+def draw_interactive_header(layout, md, nodes_module) -> None:
+    identifier = socket_identifiers(md, nodes_module).get(generator_nodes.SOCKET_INTERACTIVE)
+
+    if identifier and identifier in md:
+        layout.prop(md, f'["{identifier}"]', text="Interactive")
+
+
+def draw_refresh(layout, md, identifiers: dict[str, str]) -> None:
+    if not socket_value(md, identifiers, generator_nodes.SOCKET_INTERACTIVE, True):
+        layout.operator("object.jewelcraft_generator_refresh", icon="FILE_REFRESH")
+
+
 def setup_property_layout(layout) -> None:
     layout.use_property_split = True
     layout.use_property_decorate = False

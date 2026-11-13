@@ -51,6 +51,11 @@ class OBJECT_PT_openwork_generator_modifier(Panel):
         ob = context.object
         return ob is not None and _openwork_modifier(ob) is not None
 
+    def draw_header(self, context):
+        from . import openwork_nodes
+
+        generator_ui.draw_interactive_header(self.layout, _openwork_modifier(context.object), openwork_nodes)
+
     def draw(self, context):
         from . import openwork_nodes
 
@@ -59,6 +64,7 @@ class OBJECT_PT_openwork_generator_modifier(Panel):
 
         layout = self.layout
         generator_ui.setup_property_layout(layout)
+        generator_ui.draw_refresh(layout, md, identifiers)
 
         from . import openwork_mesh
 

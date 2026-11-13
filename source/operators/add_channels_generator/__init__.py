@@ -48,6 +48,11 @@ class OBJECT_PT_channels_generator_modifier(Panel):
         ob = context.object
         return ob is not None and _channels_modifier(ob) is not None
 
+    def draw_header(self, context):
+        from . import channels_nodes
+
+        generator_ui.draw_interactive_header(self.layout, _channels_modifier(context.object), channels_nodes)
+
     def draw(self, context):
         md = _channels_modifier(context.object)
         from . import channels_nodes
@@ -56,6 +61,7 @@ class OBJECT_PT_channels_generator_modifier(Panel):
 
         layout = self.layout
         generator_ui.setup_property_layout(layout)
+        generator_ui.draw_refresh(layout, md, identifiers)
 
         from . import channels_mesh
 

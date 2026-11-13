@@ -102,8 +102,12 @@ def openwork_auto_update(scene, depsgraph: Depsgraph) -> None:
     )
 
 
-def update_object(ob: Object, depsgraph: Depsgraph | None = None) -> None:
+def update_object(ob: Object, depsgraph: Depsgraph | None = None, force: bool = False) -> None:
     modifier_values = _modifier_values(ob)
+
+    if not generator_mesh.is_update_allowed(modifier_values, force):
+        return
+
     source_coll = modifier_values["source_coll"]
 
     if source_coll is None:

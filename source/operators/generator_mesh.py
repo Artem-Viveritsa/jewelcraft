@@ -62,7 +62,9 @@ def auto_update(scene, depsgraph, source_prop: str, update_object, handler_del_f
     generators = [ob for ob in scene.objects if source_prop in ob]
 
     if not generators:
-        handler_del_func()
+        if not any(source_prop in ob for ob in bpy.data.objects):
+            handler_del_func()
+
         return
 
     state["is_updating"] = True
@@ -71,6 +73,10 @@ def auto_update(scene, depsgraph, source_prop: str, update_object, handler_del_f
             update_object(ob, depsgraph=depsgraph)
     finally:
         state["is_updating"] = False
+
+
+def is_update_allowed(modifier_values: dict, force: bool = False) -> bool:
+    return force or bool(modifier_values[generator_nodes.SOCKET_INTERACTIVE])
 
 
 def clear_mesh(ob: Object, signature_prop: str) -> None:

@@ -24,6 +24,7 @@ DESCRIPTION_COLLECTION = "Collection containing gem objects"
 
 SOCKETS = (
     (SOCKET_COLLECTION, "NodeSocketCollection", None, None, None, DESCRIPTION_COLLECTION),
+    generator_nodes.INTERACTIVE_SOCKET,
     (SOCKET_RATIO, "NodeSocketFloat", DEFAULT_RATIO, 0.01, 10.0, "Channel radius relative to gem radius"),
     (
         SOCKET_MAX_GAP,
