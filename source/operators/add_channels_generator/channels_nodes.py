@@ -20,12 +20,35 @@ DEFAULT_MAX_GAP = 0.5
 DEFAULT_OFFSET_RATIO = 0.0
 DEFAULT_CURVE_RESOLUTION = 32
 
+DESCRIPTION_COLLECTION = "Collection containing gem objects"
+
 SOCKETS = (
-    (SOCKET_COLLECTION, "NodeSocketCollection", None, None, None),
-    (SOCKET_RATIO, "NodeSocketFloat", DEFAULT_RATIO, 0.01, 10.0),
-    (SOCKET_MAX_GAP, "NodeSocketFloat", DEFAULT_MAX_GAP, 0.0, 1000.0),
-    (SOCKET_OFFSET_RATIO, "NodeSocketFloat", DEFAULT_OFFSET_RATIO, -1.0, 1.0),
-    (SOCKET_CURVE_RESOLUTION, "NodeSocketInt", DEFAULT_CURVE_RESOLUTION, 3, 128),
+    (SOCKET_COLLECTION, "NodeSocketCollection", None, None, None, DESCRIPTION_COLLECTION),
+    (SOCKET_RATIO, "NodeSocketFloat", DEFAULT_RATIO, 0.01, 10.0, "Channel radius relative to gem radius"),
+    (
+        SOCKET_MAX_GAP,
+        "NodeSocketFloat",
+        DEFAULT_MAX_GAP,
+        0.0,
+        1000.0,
+        "Largest distance between gem outlines for a channel to be created",
+    ),
+    (
+        SOCKET_OFFSET_RATIO,
+        "NodeSocketFloat",
+        DEFAULT_OFFSET_RATIO,
+        -1.0,
+        1.0,
+        "Move channel ends along the gem normal, relative to gem radius",
+    ),
+    (
+        SOCKET_CURVE_RESOLUTION,
+        "NodeSocketInt",
+        DEFAULT_CURVE_RESOLUTION,
+        3,
+        128,
+        "Number of segments around the channel",
+    ),
 )
 
 SETTINGS_SOCKET_ATTRS = (

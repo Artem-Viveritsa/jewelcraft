@@ -32,8 +32,16 @@ def ensure_node_group(name: str, schema_key: str, sockets) -> GeometryNodeTree:
 
     if ng is None:
         ng = bpy.data.node_groups.new(name, "GeometryNodeTree")
+        return build_node_group(ng, schema_key, sockets)
 
-    return build_node_group(ng, schema_key, sockets)
+    saved = _modifier_values(ng)
+    build_node_group(ng, schema_key, sockets)
+    defaults = {socket[0]: socket[2] for socket in sockets if socket[2] is not None}
+
+    for md, values in saved:
+        apply_modifier_values(md, defaults | values)
+
+    return ng
 
 
 def build_node_group(
@@ -52,8 +60,8 @@ def build_node_group(
     _new_socket(ng, "Geometry", "OUTPUT", "NodeSocketGeometry")
     _new_socket(ng, "Geometry", "INPUT", "NodeSocketGeometry")
 
-    for name, socket_type, default_value, min_value, max_value in sockets:
-        _new_socket(ng, name, "INPUT", socket_type, default_value, min_value, max_value)
+    for name, socket_type, default_value, min_value, max_value, *description in sockets:
+        _new_socket(ng, name, "INPUT", socket_type, default_value, min_value, max_value, *description)
 
     group_in = ng.nodes.new("NodeGroupInput")
     group_in.location = (-220, 0)
@@ -112,6 +120,19 @@ def new_modifier(context, ob, name: str, ensure_group, values: dict | None = Non
     return md
 
 
+def _modifier_values(ng: GeometryNodeTree) -> list[tuple[NodesModifier, dict]]:
+    identifiers = socket_identifiers(ng)
+    saved = []
+
+    for ob in bpy.data.objects:
+        for md in ob.modifiers:
+            if md.type == "NODES" and md.node_group is ng:
+                values = {name: md[identifier] for name, identifier in identifiers.items() if identifier in md}
+                saved.append((md, values))
+
+    return saved
+
+
 def settings_to_values(settings, socket_attrs) -> dict:
     return {socket: _attr_value(settings, attr) for socket, attr in socket_attrs}
 
@@ -166,8 +187,9 @@ def _new_socket(
     default_value=None,
     min_value=None,
     max_value=None,
+    description: str = "",
 ):
-    socket = ng.interface.new_socket(name=name, in_out=in_out, socket_type=socket_type)
+    socket = ng.interface.new_socket(name=name, in_out=in_out, socket_type=socket_type, description=description)
 
     if in_out == "INPUT" and hasattr(socket, "hide_in_modifier"):
         socket.hide_in_modifier = True

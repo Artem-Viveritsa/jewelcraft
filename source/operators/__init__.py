@@ -1,6 +1,7 @@
 from .add_cutter import *
 from .add_cutters_generator import *
 from .add_channels_generator import *
+from .add_openwork_generator import *
 from .add_microprong import *
 from .add_prongs import *
 from .add_prongs_auto import *

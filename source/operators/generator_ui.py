@@ -97,11 +97,17 @@ def invoke_add_operator(operator, context, purge_handlers):
     return {"RUNNING_MODAL"}
 
 
-def draw_collection(layout, ob, prop_name: str, text: str = "Gem Collection") -> None:
+def draw_collection(layout, ob, prop_name: str, text: str = "Gem Collection", description: str = "") -> None:
     if prop_name not in ob:
         ob[prop_name] = ""
     elif ob[prop_name] and collection_by_name(ob[prop_name]) is None:
         ob[prop_name] = ""
+
+    if description:
+        ui_data = ob.id_properties_ui(prop_name)
+
+        if ui_data.as_dict().get("description") != description:
+            ui_data.update(description=description)
 
     layout.prop_search(ob, f'["{prop_name}"]', bpy.data, "collections", text=text)
 

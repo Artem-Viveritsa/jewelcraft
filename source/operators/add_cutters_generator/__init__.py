@@ -51,6 +51,8 @@ class OBJECT_PT_cutters_generator_modifier(Panel):
         return ob is not None and _cutters_modifier(ob) is not None
 
     def draw(self, context):
+        from . import cutters_nodes
+
         md = _cutters_modifier(context.object)
         identifiers = _socket_identifiers(md)
         cut, shape = _source_cut_shape(context.object)
@@ -60,7 +62,12 @@ class OBJECT_PT_cutters_generator_modifier(Panel):
 
         from . import cutters_mesh
 
-        generator_ui.draw_collection(layout, context.object, cutters_mesh.PROP_SOURCE_COLLECTION)
+        generator_ui.draw_collection(
+            layout,
+            context.object,
+            cutters_mesh.PROP_SOURCE_COLLECTION,
+            description=cutters_nodes.DESCRIPTION_COLLECTION,
+        )
 
         layout.separator()
 

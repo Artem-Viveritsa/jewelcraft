@@ -3,15 +3,15 @@
 
 
 if "bpy" in locals():
-    essentials.reload_recursive(var.ADDON_DIR, locals())  # noqa: F821
-else:
-    import bpy
-    from bpy.props import PointerProperty
+    essentials.unload_submodules(__name__, globals())  # noqa: F821
 
-    from . import localization, operators, preferences, ui, var
-    from .lib import essentials, on_load, previewlib
+import bpy
+from bpy.props import PointerProperty
 
-    essentials.check_integrity(var.GEMS_FILE)
+from . import localization, operators, preferences, ui, var
+from .lib import essentials, on_load, previewlib
+
+essentials.check_integrity(var.GEMS_FILE)
 
 
 classes = essentials.get_classes((operators, preferences, ui))
@@ -47,8 +47,6 @@ def register():
 
 def unregister():
     from .lib import overlays, spacing
-    from .operators.add_channels_generator import channels_mesh
-    from .operators.add_cutters_generator import cutters_mesh
 
     for cls in classes:
         bpy.utils.unregister_class(cls)
@@ -66,8 +64,10 @@ def unregister():
 
     overlays.clear()
     spacing.handler_del()
-    cutters_mesh.handler_del()
-    channels_mesh.handler_del()
+    for handler in tuple(bpy.app.handlers.depsgraph_update_post):
+        if (getattr(handler, "__module__", None) or "").startswith(__package__):
+            bpy.app.handlers.depsgraph_update_post.remove(handler)
+
     on_load.handler_del()
 
     # Translations

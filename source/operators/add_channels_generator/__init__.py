@@ -59,7 +59,12 @@ class OBJECT_PT_channels_generator_modifier(Panel):
 
         from . import channels_mesh
 
-        generator_ui.draw_collection(layout, context.object, channels_mesh.PROP_SOURCE_COLLECTION)
+        generator_ui.draw_collection(
+            layout,
+            context.object,
+            channels_mesh.PROP_SOURCE_COLLECTION,
+            description=channels_nodes.DESCRIPTION_COLLECTION,
+        )
         layout.separator()
         generator_ui.draw_socket(layout, md, identifiers, "Radius Scale")
         generator_ui.draw_socket(layout, md, identifiers, "Max Gap")

@@ -138,6 +138,7 @@ class VIEW3D_MT_jewelcraft(Menu):
         layout.separator()
         layout.operator("object.jewelcraft_cutters_generator_add", text="Cutters Generator", icon_value=icon_menu("CUTTER"))
         layout.operator("object.jewelcraft_channels_generator_add", text="Channels Generator", icon_value=icon_menu("CUTTER"))
+        layout.operator("object.jewelcraft_openwork_generator_add", text="Openwork Generator", icon_value=icon_menu("CUTTER"))
         layout.separator()
         layout.operator("object.jewelcraft_curve_distribute", icon_value=icon_menu("DISTRIBUTE"))
         layout.operator("object.jewelcraft_curve_redistribute", icon_value=icon_menu("REDISTRIBUTE"))
@@ -584,6 +585,7 @@ class VIEW3D_PT_jewelcraft_jeweling(SidebarSetup, Panel):
         col = layout.column(align=True)
         col.operator("object.jewelcraft_cutters_generator_add", text="Cutters Generator", icon_value=icon("CUTTER"))
         col.operator("object.jewelcraft_channels_generator_add", text="Channels Generator", icon_value=icon("CUTTER"))
+        col.operator("object.jewelcraft_openwork_generator_add", text="Openwork Generator", icon_value=icon("CUTTER"))
 
         layout.separator()
         row = layout.row(align=True)

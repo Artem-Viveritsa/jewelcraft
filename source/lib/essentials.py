@@ -32,22 +32,14 @@ def get_classes(modules: tuple[Any]) -> tuple[type]:
     return tuple(classes)
 
 
-def reload_recursive(path: Path, mods: dict[str, Any]) -> None:
-    import importlib
+def unload_submodules(package: str, namespace: dict[str, Any]) -> None:
+    import sys
 
-    for child in path.iterdir():
+    prefix = f"{package}."
 
-        if child.is_file() and child.suffix == ".py" and not child.name.startswith("__") and child.stem in mods:
-            importlib.reload(mods[child.stem])
-
-        elif child.is_dir() and not child.name.startswith((".", "__")):
-
-            if child.name in mods:
-                reload_recursive(child, mods[child.name].__dict__)
-                importlib.reload(mods[child.name])
-                continue
-
-            reload_recursive(child, mods)
+    for name in [name for name in sys.modules if name.startswith(prefix)]:
+        del sys.modules[name]
+        namespace.pop(name.removeprefix(prefix).partition(".")[0], None)
 
 
 def check_integrity(path: Path) -> None:

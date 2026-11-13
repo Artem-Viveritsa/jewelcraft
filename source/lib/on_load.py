@@ -65,6 +65,7 @@ def _scene_materials_deserialize():
 def _generator_handlers_add():
     from ..operators.add_channels_generator import channels_mesh
     from ..operators.add_cutters_generator import cutters_mesh
+    from ..operators.add_openwork_generator import openwork_mesh
 
     scene = bpy.context.scene
 
@@ -73,6 +74,9 @@ def _generator_handlers_add():
 
     if any(channels_mesh.PROP_SOURCE_COLLECTION in ob for ob in scene.objects):
         channels_mesh.handler_add()
+
+    if any(openwork_mesh.PROP_SOURCE_COLLECTION in ob for ob in scene.objects):
+        openwork_mesh.handler_add()
 
 
 def _scene_props_versioning():
